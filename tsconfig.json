@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "bundler",
+
+    "erasableSyntaxOnly": true,
+
+    "baseUrl": "./",
+    "paths": {
+      "#modules/*": ["modules/*"],
+      "#helper/*": ["helper/*"],
+      "#types": ["types"]
+    }
+  }
+}

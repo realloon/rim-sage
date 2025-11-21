@@ -1,7 +1,7 @@
 import OpenAI from 'openai'
 import pLimit from 'p-limit'
-import { llm } from '../helper/config'
-import { db } from '../helper/db'
+import { llm } from '#helper/config'
+import { db } from '#helper/db'
 
 const openai = new OpenAI()
 const limit = pLimit(5)

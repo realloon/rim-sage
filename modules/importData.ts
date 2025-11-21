@@ -1,7 +1,7 @@
-import type { CodeNode } from '../types'
+import type { CodeNode } from '#types'
 import { file } from 'bun'
-import { sourcePath } from '../helper/config'
-import { db } from '../helper/db'
+import { sourcePath } from '#helper/config'
+import { db } from '#helper/db'
 
 db.run(`
 CREATE TABLE IF NOT EXISTS code_nodes (

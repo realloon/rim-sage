@@ -13,22 +13,27 @@ export interface CodeNode {
   implementedInterfaces: string[]
   calls: string[]
   calledBy: string[]
-}
-
-// Enriched
-export interface CodeNode {
+  // Enriched
   summary: string
   codeRole: 'CoreLogic' | 'DataHolder' | 'UI' | 'Helper' | 'Structure'
   weight: number
 }
 
-export type DbRow = Pick<CodeNode, 'id' | 'type'> & {
+export type CodeRow = CodeNode & {
+  full_name: string
+  base_type: string | null
   code_body: string
+  file_path: string
+  start_line: number
+  attribute_details: string[]
+  implemented_interfaces: string[]
   calls: string
+  called_by: string
+  code_role: string
 }
 
-export interface SearchResult extends CodeNode {
-  distance: number
+export interface SearchResult extends CodeRow {
+  distance?: number
   score?: number
   reasoning?: string
 }

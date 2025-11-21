@@ -1,7 +1,7 @@
-import type { SearchResult } from '../types'
+import type { SearchResult, CodeRow } from '#types'
 import OpenAI from 'openai'
-import { em } from '../helper/config'
-import { db } from '../helper/db'
+import { em } from '#helper/config'
+import { db } from '#helper/db'
 
 const openai = new OpenAI()
 
@@ -17,7 +17,7 @@ export async function retrieveCandidates(
 
   // 2. SQL Query
   const results = db
-    .query(
+    .query<CodeRow, [Float32Array<ArrayBuffer>, number]>(
       `
       SELECT 
         vec.rowid, 
@@ -33,7 +33,7 @@ export async function retrieveCandidates(
       ORDER BY vec.distance
       `
     )
-    .all(queryVector, topK) as any[]
+    .all(queryVector, topK)
 
   return results.map(r => ({
     ...r,

@@ -1,6 +1,6 @@
 import OpenAI from 'openai'
-import { em, vectorDim } from '../helper/config'
-import { db } from '../helper/db'
+import { em, vectorDim } from '#helper/config'
+import { db } from '#helper/db'
 
 const openai = new OpenAI()
 

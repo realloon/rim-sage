@@ -1,4 +1,4 @@
-import { SearchResult } from '../../types'
+import { SearchResult } from '#types'
 
 export async function rankWithHeuristic(
   query: string,

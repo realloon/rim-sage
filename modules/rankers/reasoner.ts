@@ -1,6 +1,6 @@
-import { SearchResult } from '../../types'
+import { SearchResult } from '#types'
 import OpenAI from 'openai'
-import { llm } from '../../helper/config'
+import { llm } from '#helper/config'
 
 const openai = new OpenAI()
 
@@ -22,7 +22,9 @@ export async function rankWithLLM(
 ### Candidate ID: ${idx}
 - Name: ${c.name}
 - Calls: ${c.calls.slice(0, 3).join(', ') || 'unknow'}
-- CalledBy: ${c.called_by.slice(0, 3).join(', ') || 'unknow'}
+- CalledBy: ${
+        (c.called_by as unknown as string[]).slice(0, 3).join(', ') || 'unknow'
+      }
 - FilePath: ${c.file_path}
 - Code:
 \`\`\`cs

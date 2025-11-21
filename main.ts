@@ -1,7 +1,23 @@
 import type { RerankStrategy } from './types'
-import { retrieveCandidates } from './modules/retriever'
-import { rankWithHeuristic } from './modules/rankers/heuristic'
-import { rankWithLLM } from './modules/rankers/reasoner'
+import { argv } from 'bun'
+import { parseArgs } from 'util'
+import { retrieveCandidates } from '#modules/retriever'
+import { rankWithHeuristic, rankWithLLM } from '#modules/rankers'
+
+const {
+  values: { strategy = 'heuristic' },
+  positionals: [query],
+} = parseArgs({
+  args: argv.slice(2),
+  options: {
+    strategy: {
+      type: 'string',
+      short: 's',
+    },
+  },
+  strict: true,
+  allowPositionals: true,
+})
 
 const STRATEGIES: Record<string, RerankStrategy> = {
   heuristic: rankWithHeuristic,
@@ -9,23 +25,15 @@ const STRATEGIES: Record<string, RerankStrategy> = {
 }
 
 async function main() {
-  const args = process.argv.slice(2)
-  const query = args[0]
-
-  // 获取策略参数，默认 fallback 到 heuristic
-  const strategyName =
-    args.find(a => a.startsWith('--strategy='))?.split('=')[1] || 'heuristic'
-  const rankFn = STRATEGIES[strategyName]
+  const rankFn = STRATEGIES[strategy]
 
   if (!query || !rankFn) {
-    console.error(
-      `用法: bun run dev "查询内容" [--strategy=heuristic|llm]`
-    )
+    console.error(`用法: bun run dev "查询内容" --strategy heuristic|llm`)
     process.exit(1)
   }
 
   console.log(`🔍 Query: "${query}"`)
-  console.log(`🔀 Strategy: ${strategyName}`)
+  console.log(`🔀 Strategy: ${strategy}`)
 
   // Retrieval
   const candidates = await retrieveCandidates(query, 20)

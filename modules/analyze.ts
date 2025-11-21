@@ -1,5 +1,5 @@
-import type { CodeNode, DbRow } from '../types'
-import { db } from '../helper/db'
+import type { CodeNode, CodeRow } from '#types'
+import { db } from '#helper/db'
 
 const UI_KEYWORDS = [
   'Dialog',
@@ -11,7 +11,7 @@ const UI_KEYWORDS = [
   'Command_Action',
 ]
 
-function analyzeNode(row: DbRow) {
+function analyzeNode(row: CodeRow) {
   const calls: string[] = JSON.parse(row.calls)
   const lines = row.code_body.split('\n').length
 
@@ -72,7 +72,7 @@ console.log('🔄 开始分析代码逻辑特征...')
 
 const rows = db
   .query('SELECT id, type, code_body, calls FROM code_nodes')
-  .all() as DbRow[]
+  .all() as CodeRow[]
 
 const updateStmt = db.prepare(`
   UPDATE code_nodes 
@@ -80,7 +80,7 @@ const updateStmt = db.prepare(`
   WHERE id = $id
 `)
 
-const transaction = db.transaction((items: DbRow[]) => {
+const transaction = db.transaction((items: CodeRow[]) => {
   let logicCount = 0
 
   for (const row of items) {
