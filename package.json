@@ -1,4 +1,5 @@
 {
+  "name": "rim-sage",
   "main": "main.ts",
   "scripts": {
     "dev": "bun run main.ts",
