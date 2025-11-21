@@ -1,10 +1,4 @@
-import { Database } from 'bun:sqlite'
-import { join } from 'path'
-import * as sqliteVec from 'sqlite-vec'
-
-const db = new Database(join(import.meta.dir, '../dist/rag.db'))
-
-sqliteVec.load(db)
+import { db } from '#helper/db'
 
 try {
   db.run('DROP TABLE IF EXISTS code_vectors')

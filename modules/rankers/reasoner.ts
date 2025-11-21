@@ -1,13 +1,13 @@
-import { SearchResult } from '#types'
+import { RerankStrategy, SearchResult } from '#types'
 import OpenAI from 'openai'
 import { llm } from '#helper/config'
 
 const openai = new OpenAI()
 
-export async function rankWithLLM(
+export const rankWithLLM: RerankStrategy = async (
   query: string,
   candidates: SearchResult[]
-): Promise<SearchResult[]> {
+): Promise<SearchResult[]> => {
   const topCandidates = candidates.slice(0, 10)
 
   // 2. 构建 Context
@@ -21,10 +21,8 @@ export async function rankWithLLM(
       return `
 ### Candidate ID: ${idx}
 - Name: ${c.name}
-- Calls: ${c.calls.slice(0, 3).join(', ') || 'unknow'}
-- CalledBy: ${
-        (c.called_by as unknown as string[]).slice(0, 3).join(', ') || 'unknow'
-      }
+- Calls: ${(c.calls as string[]).slice(0, 3).join(', ') || 'unknow'}
+- CalledBy: ${(c.called_by as string[]).slice(0, 3).join(', ') || 'unknow'}
 - FilePath: ${c.file_path}
 - Code:
 \`\`\`cs

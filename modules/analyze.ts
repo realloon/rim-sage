@@ -1,4 +1,4 @@
-import type { CodeNode, CodeRow } from '#types'
+import type { NodeRow, CodeRole } from '#types'
 import { db } from '#helper/db'
 
 const UI_KEYWORDS = [
@@ -11,18 +11,19 @@ const UI_KEYWORDS = [
   'Command_Action',
 ]
 
-function analyzeNode(row: CodeRow) {
+function analyzeNode(row: NodeRow) {
   const calls: string[] = JSON.parse(row.calls)
   const lines = row.code_body.split('\n').length
 
-  let role: CodeNode['codeRole'] = 'Helper' // default
+  let role: CodeRole = 'Helper' // default
 
   if (row.type === 'Property') {
     role = 'DataHolder'
   } else if (row.type === 'Class') {
-    role = 'Structure' // 稍微区分一下类和纯数据
+    role = 'Structure'
   } else {
     // Method
+
     const isUI = calls.some(callId =>
       UI_KEYWORDS.some(kw => callId.includes(kw))
     )
@@ -42,6 +43,7 @@ function analyzeNode(row: CodeRow) {
 
   // type multiplier
   let multiplier = 1.0
+
   if (row.type === 'Class') {
     multiplier = 0.5
   }
@@ -58,6 +60,7 @@ function analyzeNode(row: CodeRow) {
   score *= multiplier
 
   let weight = score / 40.0
+
   if (weight > 1.0) {
     weight = 1.0
   }
@@ -71,8 +74,8 @@ function analyzeNode(row: CodeRow) {
 console.log('🔄 开始分析代码逻辑特征...')
 
 const rows = db
-  .query('SELECT id, type, code_body, calls FROM code_nodes')
-  .all() as CodeRow[]
+  .query<NodeRow, []>('SELECT id, type, code_body, calls FROM code_nodes')
+  .all()
 
 const updateStmt = db.prepare(`
   UPDATE code_nodes 
@@ -80,7 +83,7 @@ const updateStmt = db.prepare(`
   WHERE id = $id
 `)
 
-const transaction = db.transaction((items: CodeRow[]) => {
+const transaction = db.transaction((items: NodeRow[]) => {
   let logicCount = 0
 
   for (const row of items) {

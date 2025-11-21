@@ -1,4 +1,3 @@
-import type { RerankStrategy } from './types'
 import { argv } from 'bun'
 import { parseArgs } from 'util'
 import { retrieveCandidates } from '#modules/retriever'
@@ -19,13 +18,13 @@ const {
   allowPositionals: true,
 })
 
-const STRATEGIES: Record<string, RerankStrategy> = {
+const STRATEGIES = {
   heuristic: rankWithHeuristic,
   llm: rankWithLLM,
 }
 
 async function main() {
-  const rankFn = STRATEGIES[strategy]
+  const rankFn = STRATEGIES[strategy as 'heuristic' | 'llm']
 
   if (!query || !rankFn) {
     console.error(`用法: bun run dev "查询内容" --strategy heuristic|llm`)

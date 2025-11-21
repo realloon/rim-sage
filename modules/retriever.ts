@@ -1,4 +1,4 @@
-import type { SearchResult, CodeRow } from '#types'
+import type { NodeRow, SearchResult } from '#types'
 import OpenAI from 'openai'
 import { em } from '#helper/config'
 import { db } from '#helper/db'
@@ -17,7 +17,7 @@ export async function retrieveCandidates(
 
   // 2. SQL Query
   const results = db
-    .query<CodeRow, [Float32Array<ArrayBuffer>, number]>(
+    .query<NodeRow, [Float32Array<ArrayBuffer>, number]>(
       `
       SELECT 
         vec.rowid, 

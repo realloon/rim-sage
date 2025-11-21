@@ -1,9 +1,18 @@
-// Raw
+type CodeType = 'Method' | 'Property' | 'Class'
+
+export type CodeRole =
+  | 'CoreLogic'
+  | 'DataHolder'
+  | 'UI'
+  | 'Helper'
+  | 'Structure'
+
+// lower camel case
 export interface CodeNode {
   id: string
   name: string
   fullName: string
-  type: 'Method' | 'Property' | 'Class'
+  type: CodeType
   baseType: string | null
   codeBody: string
   filePath: string
@@ -15,24 +24,33 @@ export interface CodeNode {
   calledBy: string[]
   // Enriched
   summary: string
-  codeRole: 'CoreLogic' | 'DataHolder' | 'UI' | 'Helper' | 'Structure'
+  codeRole: CodeRole
   weight: number
 }
 
-export type CodeRow = CodeNode & {
+// snake_case
+export interface NodeRow {
+  rowid: string
+  id: string
+  name: string
   full_name: string
+  type: CodeType
   base_type: string | null
   code_body: string
   file_path: string
   start_line: number
-  attribute_details: string[]
-  implemented_interfaces: string[]
-  calls: string
-  called_by: string
-  code_role: string
+  attributes: string[]
+  attribute_details: string // array
+  implemented_interfaces: string // array
+  calls: string | string[] // array
+  called_by: string | string[] // array
+  // Enriched
+  summary: string
+  code_role: CodeRole
+  weight: number
 }
 
-export interface SearchResult extends CodeRow {
+export interface SearchResult extends NodeRow {
   distance?: number
   score?: number
   reasoning?: string

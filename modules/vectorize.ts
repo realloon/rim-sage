@@ -1,3 +1,4 @@
+import type { NodeRow } from '#types'
 import OpenAI from 'openai'
 import { em, vectorDim } from '#helper/config'
 import { db } from '#helper/db'
@@ -18,7 +19,7 @@ console.log('✅ 向量表初始化完成')
 // 我们只处理 summary 已经生成，且还没入库向量的数据
 // (这里简化逻辑：简单的差量更新可以通过 rowid 不在 code_vectors 里判断)
 const nodesToProcess = db
-  .query(
+  .query<NodeRow, []>(
     `
   SELECT rowid, id, name, summary, code_role 
   FROM code_nodes 
@@ -26,7 +27,7 @@ const nodesToProcess = db
   AND rowid NOT IN (SELECT rowid FROM code_vectors)
 `
   )
-  .all() as any[]
+  .all()
 
 console.log(`🚀 待处理向量节点: ${nodesToProcess.length} 个`)
 
@@ -38,7 +39,7 @@ if (nodesToProcess.length === 0) {
 // 4. 批量处理函数 (OpenAI 支持一次发一批，节省网络开销)
 const BATCH_SIZE = 20
 
-async function processBatch(batch: any[]) {
+async function processBatch(batch: NodeRow[]) {
   // A. 构建语义文本
   // 技巧：把 Role 和 Name 加进去，增加语义锚点
   const textsToEmbed = batch.map(node => {

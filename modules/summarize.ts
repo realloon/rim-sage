@@ -1,3 +1,4 @@
+import { NodeRow } from '#types'
 import OpenAI from 'openai'
 import pLimit from 'p-limit'
 import { llm } from '#helper/config'
@@ -8,28 +9,32 @@ const limit = pLimit(5)
 
 async function main() {
   const nodes = db
-    .query(
+    .query<NodeRow, []>(
       `
       SELECT * FROM code_nodes 
       WHERE summary IS NULL 
       ORDER BY weight DESC
       `
     )
-    .all() as any[]
+    .all()
 
   console.log(`📝 待处理节点数: ${nodes.length}`)
 
   // 准备查询 Calls 名称的 SQL (为了给 LLM 提供上下文)
-  const getNameStmt = db.prepare('SELECT name FROM code_nodes WHERE id = ?')
+  const getNameStmt = db.prepare<{ name: string }, [string]>(`
+    SELECT name FROM code_nodes 
+    WHERE id = ?
+  `)
 
   // 准备更新 SQL
-  const updateStmt = db.prepare(
-    'UPDATE code_nodes SET summary = $summary WHERE id = $id'
-  )
+  const updateStmt = db.prepare(`
+    UPDATE code_nodes SET summary = $summary
+    WHERE id = $id
+  `)
 
   // 2. 构建任务队列
   const tasks = nodes.map(node => {
-    return limit(async () => {
+    const handle = async () => {
       try {
         // 策略：权重太低直接跳过 LLM，省钱
         if (node.weight < 0.1 && node.code_role === 'DataHolder') {
@@ -42,11 +47,11 @@ async function main() {
         }
 
         // 获取上下文 (解析 calls JSON 拿到 ID，再查 name)
-        const callIds = JSON.parse(node.calls || '[]')
+        const callIds: string[] = JSON.parse(node.calls ?? '[]')
         const callNames = callIds
-          .map((id: string) => getNameStmt.get(id) as any)
-          .filter((r: any) => r)
-          .map((r: any) => r.name)
+          .map(id => getNameStmt.get(id))
+          .filter(r => r)
+          .map(r => r.name)
 
         // 生成 Prompt
         const prompt = buildPrompt(node, callNames)
@@ -66,7 +71,9 @@ async function main() {
       } catch (error) {
         console.error(`❌ 失败: ${node.name}`, error)
       }
-    })
+    }
+
+    return limit(handle)
   })
 
   // 3. 等待所有任务完成
@@ -76,7 +83,7 @@ async function main() {
 
 main()
 
-function buildPrompt(node: any, callNames: string[]) {
+function buildPrompt(node: NodeRow, callNames: string[]) {
   const callsContext =
     callNames.length > 0
       ? `Context: It calls these components: ${callNames.join(', ')}.`

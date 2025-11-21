@@ -1,9 +1,9 @@
-import { SearchResult } from '#types'
+import { RerankStrategy, SearchResult } from '#types'
 
-export async function rankWithHeuristic(
+export const rankWithHeuristic: RerankStrategy = (
   query: string,
   candidates: SearchResult[]
-): Promise<SearchResult[]> {
+): Promise<SearchResult[]> => {
   const queryLower = query.toLowerCase()
 
   const ranked = candidates.map(item => {
@@ -32,5 +32,5 @@ export async function rankWithHeuristic(
   })
 
   // 降序排列
-  return ranked.sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
+  return Promise.resolve(ranked.sort((a, b) => (b.score ?? 0) - (a.score ?? 0)))
 }

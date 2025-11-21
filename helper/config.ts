@@ -6,7 +6,7 @@ export const useLibSqlite3 = process.env.USE_LIB_SQLITE3 === 'TRUE'
 export const envPath = join(import.meta.dir, '../.env')
 export const dbPath = join(import.meta.dir, '../dist/rag.db')
 export const sourcePath = join(import.meta.dir, '../assets/metadata.json')
-export const libSqlite3Path = join(import.meta.dir, '../lib/libsqlite3.dylib')
+export const libSqlite3Path = join(import.meta.dir, '../assets/libsqlite3.dylib')
 
 if (!process.env.LLM) {
   throw new Error(`env var "LLM" is missing. Editor: ${envPath}`)
