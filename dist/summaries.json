@@ -1,0 +1,1002 @@
+[
+  {
+    "id": "P:CWF.Controllers.ConflictAnalysisResult.HasConflict",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "P:CWF.Controllers.ConflictAnalysisResult.ModulesToRemove",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "T:CWF.Controllers.ConflictAnalysisResult",
+    "summary": "Represents the outcome of a conflict analysis. It lists modules that must be removed."
+  },
+  {
+    "id": "M:CWF.Controllers.InteractionController.GetCompatibleModuleDefsFor(CWF.PartDef)",
+    "summary": "Returns compatible module definitions for component and weapon type.  \nFilters by component and compatibility."
+  },
+  {
+    "id": "M:CWF.Controllers.InteractionController.ShowConfirmationDialog(System.String,System.String,System.Action)",
+    "summary": "Displays a modal confirmation dialog that presents a title, a message, and a confirm button to the user. If the user confirms, the method invokes the supplied callback, allowing the application to proceed with the intended action only after explicit user approval."
+  },
+  {
+    "id": "M:CWF.Controllers.InteractionController.CalculateFutureAvailableParts(System.Collections.Generic.IEnumerable{RimWorld.WeaponTraitDef})",
+    "summary": "Determines the set of parts that will be usable on a weapon after applying upcoming traits, beginning with the weapon’s base support parts. It then refines this collection by applying trait-specific part enable/disable rules that depend on the weapon’s definition, ensuring only the allowed parts remain."
+  },
+  {
+    "id": "M:CWF.Controllers.InteractionController.AnalyzeUninstallConflict(CWF.PartDef)",
+    "summary": "AnalyzeUninstallConflict determines which modules must be removed when a specific part is uninstalled, by checking the impact on the installed traits. It uses a helper to compute the set of parts that will remain available after the removal and flags any traits that would become unsupported. The result is a list of modules to delete, ensuring the system avoids conflicts caused by missing dependencies."
+  },
+  {
+    "id": "M:CWF.Controllers.InteractionController.AnalyzeInstallConflict(Verse.ThingDef)",
+    "summary": "Evaluates whether a new module can be installed without breaking existing traits by checking if the module would disable any parts that currently host installed traits. It builds a list of traits that must be removed to resolve any detected conflicts, ensuring the module can be added safely without compromising existing functionality."
+  },
+  {
+    "id": "M:CWF.Controllers.InteractionController.CreateInstallAction(CWF.PartDef,RimWorld.WeaponTraitDef)",
+    "summary": "Generates an install action for a part with a weapon trait. It performs a conflict analysis and, if any modules would clash, asks the player to confirm removal of those modules before completing the installation."
+  },
+  {
+    "id": "M:CWF.Controllers.InteractionController.DoUninstall(CWF.PartDef)",
+    "summary": "Manages the removal of a trait from a part by first checking whether a trait is installed, then staging the removal before actually uninstalling it, and finally notifying the system of the change. This strategy ensures that the trait is safely taken off the part and that the data model stays in sync."
+  },
+  {
+    "id": "M:CWF.Controllers.InteractionController.DoInstall(CWF.PartDef,RimWorld.WeaponTraitDef)",
+    "summary": "Handles the final installation of a weapon trait onto a part, clearing any pending uninstalls and applying the trait through the dynamic-traits component. It then signals the UI to refresh and plays a feedback sound to confirm the successful change."
+  },
+  {
+    "id": "M:CWF.Controllers.InteractionController.BuildUninstallOption(CWF.PartDef,System.Collections.Generic.List{Verse.FloatMenuOption},RimWorld.WeaponTraitDef)",
+    "summary": "Provides the UI option to uninstall a part. It performs a conflict check and, if dependencies are found, prompts the user to confirm their removal before executing the uninstall operation."
+  },
+  {
+    "id": "M:CWF.Controllers.InteractionController.BuildInstallOptions(CWF.PartDef,System.Collections.Generic.List{Verse.FloatMenuOption})",
+    "summary": "Creates a list of install options for a part, allowing the player to select a compatible module to attach. If no compatible modules are found, it adds a failure entry to the menu. The method triggers a conflict check and prompts the user to confirm before executing the installation."
+  },
+  {
+    "id": "M:CWF.Controllers.InteractionController.HandleSlotClick(CWF.PartDef,RimWorld.WeaponTraitDef)",
+    "summary": "Handles a slot click by presenting a context menu that lets the user install a part when the slot is empty or uninstall the currently installed part. The menu is built from the appropriate actions and shown to the user for selection. No confirmation dialog or warning is displayed; the operation proceeds directly after the user picks an action."
+  },
+  {
+    "id": "P:CWF.Controllers.InteractionController.FailureReason",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "T:CWF.Controllers.InteractionController",
+    "summary": "Manages UI for weapon-trait actions. Provides context-aware options."
+  },
+  {
+    "id": "M:CWF.ViewDrawers.MainDrawer.DrawPartSlot(UnityEngine.Rect@,System.String)",
+    "summary": "Creates a clickable UI element representing a part slot, allowing the user to add a new part to the assembly. The method returns a boolean indicating whether the slot was selected, enabling the caller to respond to the user’s choice."
+  },
+  {
+    "id": "M:CWF.ViewDrawers.MainDrawer.DrawModuleTexture(UnityEngine.Rect@,CWF.ModuleGraphicData)",
+    "summary": "Renders a module’s visual representation on the UI, optionally drawing an outline before the main graphic so users can see the module’s appearance. No user interaction or confirmation is required."
+  },
+  {
+    "id": "M:CWF.ViewDrawers.MainDrawer.TryDrawSlot(CWF.PartDef,UnityEngine.Rect@)",
+    "summary": "Renders a clickable UI slot for a part, displaying its installed trait or empty state and providing a tooltip that describes the trait. When the user clicks the slot, it invokes a callback that may present a menu or require confirmation before executing the associated operation."
+  },
+  {
+    "id": "M:CWF.ViewDrawers.MainDrawer.DrawPartGroup(UnityEngine.Rect@,System.Collections.Generic.List{CWF.PartDef},CWF.ViewDrawers.MainDrawer.Direction)",
+    "summary": "Renders a collection of parts as interactive slots inside a UI container, supporting both horizontal and vertical arrangements. This layout lets the user view and select individual parts for further actions."
+  },
+  {
+    "id": "M:CWF.ViewDrawers.MainDrawer.Draw(UnityEngine.Rect@)",
+    "summary": "Provides a visual representation of a weapon UI component, placing its central icon and arranging its available parts in a surrounding grid so the user can view and select parts. The method renders the layout directly without any confirmation prompts or warnings."
+  },
+  {
+    "id": "T:CWF.ViewDrawers.MainDrawer.Direction",
+    "summary": "Represents orientation options for layout or movement. Used to specify direction in UI."
+  },
+  {
+    "id": "T:CWF.ViewDrawers.MainDrawer",
+    "summary": "MainDrawer is a UI component that renders a grid of part slots for a weapon, displaying its available parts and any installed traits and handling user clicks to modify the weapon. It manages the visual layout, draws icons, and provides interaction logic for the part selection interface.  \n\nRenders UI layout for weapon part slots."
+  },
+  {
+    "id": "M:CWF.Controllers.JobDispatcher.FindBestPawnForJob(Verse.IntVec3,Verse.Map)",
+    "summary": "Determines the most suitable colonist for a job by ensuring they are free, capable of the required work, and in good health. It then selects the nearest available colonist to maximize job efficiency."
+  },
+  {
+    "id": "M:CWF.Controllers.JobDispatcher.FindBestAvailableModuleFor(CWF.ModificationData,Verse.Pawn)",
+    "summary": "Determines the optimal module for a weapon installation by confirming the operation is an install and then locating the nearest module that satisfies safety and reservation requirements for the pawn. This decision drives the installation process by ensuring the selected module is both reachable and not currently in use or unsafe."
+  },
+  {
+    "id": "M:CWF.Controllers.JobDispatcher.CalculateNetChanges(System.Collections.Generic.Dictionary{CWF.PartDef,RimWorld.WeaponTraitDef},System.Collections.Generic.Dictionary{CWF.PartDef,RimWorld.WeaponTraitDef})",
+    "summary": "Calculates net changes required to transition from an initial set of part-trait mappings into a final one, generating uninstall and install actions for any parts whose traits differ. The approach filters out unchanged parts and sorts the resulting actions by modification type to enable orderly processing."
+  },
+  {
+    "id": "M:CWF.Controllers.JobDispatcher.DispatchHaulModificationJob(System.Collections.Generic.List{CWF.ModificationData})",
+    "summary": "Determines the most suitable colonist to perform a weapon modification by evaluating location and map data, and then gathers the required modules for the requested changes. It creates a single, consolidated haul job that delivers those modules to the weapon, using a strategy that matches each modification with the best available module and assigns the job to the selected colonist. The method ensures the colonist is interrupted from non-wander tasks and reports the successful dispatch of the modification job."
+  },
+  {
+    "id": "M:CWF.Controllers.JobDispatcher.DispatchFieldModificationJobs(Verse.Pawn,System.Collections.Generic.List{CWF.ModificationData})",
+    "summary": "Determines when a pawn should apply pending weapon modifications by queuing dedicated jobs for each change, ensuring the updates are processed by the pawn’s job system. It also forces any current task to be interrupted so the modifications can be prioritized, keeping the weapon’s state aligned with the latest net changes."
+  },
+  {
+    "id": "M:CWF.Controllers.JobDispatcher.CommitChangesAndDispatchJobs",
+    "summary": "It reverts the traits to the original state before committing, then computes the net modifications by comparing the initial and final installed traits. Based on whether the weapon is owned by a pawn or placed on the ground, it dispatches the appropriate job to apply those modifications."
+  },
+  {
+    "id": "M:CWF.Controllers.JobDispatcher.#ctor(Verse.Thing)",
+    "summary": "Initializes a JobDispatcher with a weapon. Captures its dynamic traits for later use."
+  },
+  {
+    "id": "T:CWF.Controllers.JobDispatcher",
+    "summary": "Represents a job dispatcher that manages weapon trait modifications.  \nIt determines whether the weapon is equipped or on the ground, then creates and queues the appropriate jobs to install or uninstall modules, handling both self-modification and haul-based scenarios."
+  },
+  {
+    "id": "M:CWF.AbilityState.ExposeData",
+    "summary": "Exposes the object's state to the game’s save/load system, ensuring its definition name, usage charges, and cooldown information are persisted across sessions. It applies a default charge value when data is missing, preserving the object’s operational readiness. This enables the system to restore the object’s functionality after loading a saved game."
+  },
+  {
+    "id": "M:CWF.AbilityState.#ctor(RimWorld.Ability)",
+    "summary": "Initializes ability state from an ability. Copies definition name, charges, and cooldown."
+  },
+  {
+    "id": "M:CWF.AbilityState.#ctor",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "T:CWF.AbilityState",
+    "summary": "AbilityState holds the current usage and cooldown information for a game ability, allowing the game to preserve its state across sessions. It serves as a lightweight data container for saving and loading ability state.  \n\nData/Helper Role: Represents ability usage and cooldown data."
+  },
+  {
+    "id": "M:CWF.CompAbilityProvider.CanBeReloadedWith(Verse.ThingDef)",
+    "summary": "Calculates whether a given ammunition can be used to reload any of the currently managed abilities by checking that the ability accepts that ammo and has fewer charges than its maximum. It enforces the rule that only abilities which both accept the ammo and are not fully charged are eligible, ensuring reload options are presented only when they are meaningful. This boolean result drives the user-interface and system logic for deciding whether to offer a reload action."
+  },
+  {
+    "id": "M:CWF.CompAbilityProvider.DisabledReason(System.Int32,System.Int32)",
+    "summary": "Determines the reason a reload command is disabled and returns a localized message that explains the specific resource shortfall. It evaluates the required charge count against the available ammunition to decide whether the issue is insufficient charges or lack of ammo. The method ensures the user receives clear, context-aware feedback about the required resource amounts."
+  },
+  {
+    "id": "M:CWF.CompAbilityProvider.MaxAmmoAmount",
+    "summary": "Calculates total maximum ammo across reloadable abilities. Returns the summed value for game logic."
+  },
+  {
+    "id": "M:CWF.CompAbilityProvider.MaxAmmoNeeded(System.Boolean)",
+    "summary": "Calculates the total ammo required to fully reload all managed abilities that need reloading, using the charge deficits and per-charge ammo usage. It checks whether a forced reload is allowed via the NeedsReload component before returning the total, enabling the system to decide if a forced reload is permissible."
+  },
+  {
+    "id": "M:CWF.CompAbilityProvider.MinAmmoNeeded(System.Boolean)",
+    "summary": "Calculates the minimum amount of ammo required to satisfy a reload request. It checks whether a reload is needed and, if so, returns the ammo count per charge for the first ability that needs a reload, respecting the flag that permits forced reloads."
+  },
+  {
+    "id": "M:CWF.CompAbilityProvider.ReloadFrom(Verse.Thing)",
+    "summary": "Identifies the appropriate reloadable ability that matches the supplied ammunition type and has remaining capacity. It calculates the maximum number of charges that can be restored based on the available ammunition and the per-charge cost. The method then updates the ability’s charge count, consumes the required amount of ammunition, and plays a reload sound."
+  },
+  {
+    "id": "M:CWF.CompAbilityProvider.NeedsReload(System.Boolean)",
+    "summary": "Evaluates whether any managed ability of a reloadable type needs a reload by comparing its remaining charges to its maximum. A flag determines whether a forced reload is permitted, influencing the threshold used in the check and driving the game’s ability-reload logic."
+  },
+  {
+    "id": "M:CWF.CompAbilityProvider.CanBeUsed(System.String@)",
+    "summary": "Determines whether a reloadable ability can be used by checking its remaining charges and, if none remain, evaluating the current ammo against the required limits. It returns true when the ability is ready and supplies a reason when it is disabled due to insufficient ammo, thereby driving the decision to allow or block the ability’s activation based on charge state and ammo constraints."
+  },
+  {
+    "id": "P:CWF.CompAbilityProvider.LabelRemaining",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "P:CWF.CompAbilityProvider.MaxCharges",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "P:CWF.CompAbilityProvider.RemainingCharges",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "P:CWF.CompAbilityProvider.BaseReloadTicks",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "P:CWF.CompAbilityProvider.AmmoDef",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "P:CWF.CompAbilityProvider.ReloadableThing",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "P:CWF.CompAbilityProvider.ReloadableProps",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "P:CWF.CompAbilityProvider.FirstReloadableAbility",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "M:CWF.CompAbilityProvider.PostExposeData",
+    "summary": "It manages the persistence of the object’s ability properties and their associated states across save and load operations. By storing ability identifiers and reconstructing the corresponding properties from the definition database, while deep-copying ability states, it ensures the object’s functional capabilities remain consistent after a session."
+  },
+  {
+    "id": "M:CWF.CompAbilityProvider.ApplyAbilityChanges(System.Boolean)",
+    "summary": "Synchronizes the entity’s ability set with a managed collection by adding or removing abilities to keep the configuration consistent. It also restores charge and cooldown information after a game load, ensuring the abilities reflect the intended state. This process maintains the entity’s abilities in line with its current configuration."
+  },
+  {
+    "id": "M:CWF.CompAbilityProvider.OnUnequipped(Verse.Pawn)",
+    "summary": "Removes any temporary abilities that were granted by an item when it is removed from its holder, ensuring the holder no longer retains those abilities. It then signals the ability system that the set of abilities has changed and clears internal references to reset the state after an unequip event."
+  },
+  {
+    "id": "M:CWF.CompAbilityProvider.OnEquipped(Verse.Pawn)",
+    "summary": "When an item is equipped, the system registers the pawn as the new owner and builds a mapping of the item’s abilities to their associated properties, which drives the activation of those abilities for the pawn. This mapping ensures the correct set of abilities is made available after equipment, aligning the pawn’s capabilities with the equipped item."
+  },
+  {
+    "id": "M:CWF.CompAbilityProvider.SetOrUpdateAbilities(System.Collections.Generic.List{RimWorld.CompProperties_EquippableAbilityReloadable},System.Boolean)",
+    "summary": "Updates the ability configuration of the owning entity by replacing the current list of ability properties with a new collection, ensuring the game logic reflects the latest set of abilities. If the entity is present, it delegates to the ApplyAbilityChanges component to apply the changes, supporting both runtime and post-load updates."
+  },
+  {
+    "id": "T:CWF.CompAbilityProvider",
+    "summary": "Manages abilities for an equipped item, adding, removing, and reloading them."
+  },
+  {
+    "id": "M:CWF.ModuleDatabase.GetCompatibleWeaponDefsFor(Verse.ThingDef)",
+    "summary": "Computes the set of compatible weapon definitions for a trait module by applying inclusion and exclusion rules defined in the module’s extension. It enforces required weapon definitions and tags while removing excluded ones, ensuring only allowed weapons are returned."
+  },
+  {
+    "id": "M:CWF.ModuleDatabase.IsCompatibleWith(Verse.ThingDef,Verse.ThingDef)",
+    "summary": "Determines whether a weapon is compatible with a module by applying trait-based compatibility rules. It checks the module’s trait extension for explicit exclusions and required definitions or tags, returning true only when the weapon satisfies the required criteria."
+  },
+  {
+    "id": "M:CWF.ModuleDatabase.TryGetModuleDef(RimWorld.WeaponTraitDef,Verse.ThingDef@)",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "M:CWF.ModuleDatabase.TryGetPart(RimWorld.WeaponTraitDef,CWF.PartDef@)",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "M:CWF.ModuleDatabase.BuildCacheAndInject",
+    "summary": "Constructs fast-access caches that associate weapon definitions with their tags and link trait modules to their associated parts, allowing the system to retrieve relevant weapons without scanning the entire database. It then enriches each module definition with the trait’s description and adds hyperlinks to all weapons that match the module’s traits, ensuring users see the most relevant items. The method’s core responsibility is to drive decisions about weapon compatibility and maintain a consistent, searchable cache for the application."
+  },
+  {
+    "id": "M:CWF.ModuleDatabase.GetTraitEffect(RimWorld.WeaponTraitDef)",
+    "summary": "Generates a textual description of a weapon trait’s effects by aggregating its stat offsets, stat factors, burst-shot count and speed multipliers, and any additional stopping power. It formats these values for UI display, ensuring only relevant modifiers are included."
+  },
+  {
+    "id": "P:CWF.ModuleDatabase.AllModuleDefs",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "T:CWF.ModuleDatabase",
+    "summary": "Manages cache linking weapon traits to parts. Provides lookup and compatibility checks for modules."
+  },
+  {
+    "id": "M:CWF.HarmonyPatches.Postfix_ThingDef_SpecialDisplayStats.GetStatsExplanation(CWF.CompDynamicTraits,System.Text.StringBuilder,System.String,System.Func{RimWorld.WeaponTraitDef,System.Single},System.Single,Verse.ToStringNumberSense,Verse.ToStringStyle)",
+    "summary": "Generates a UI-friendly explanation of weapon module statistics by highlighting only those traits that differ from a default value. It builds a formatted list under a header, presenting the non-default traits with consistent formatting for clear user display."
+  },
+  {
+    "id": "M:CWF.HarmonyPatches.Postfix_ThingDef_SpecialDisplayStats.Postfix(System.Collections.Generic.IEnumerable{RimWorld.StatDrawEntry},Verse.ThingDef,RimWorld.StatRequest)",
+    "summary": "Enables users to see weapon stats that reflect the influence of dynamic traits, providing a clear view of how traits affect burst fire rate, burst shot count, and stopping power. The method adds or updates these values in the stat display, allowing players to understand the combined effect of base weapon stats and trait modifiers. No user confirmation or additional interaction is required."
+  },
+  {
+    "id": "T:CWF.HarmonyPatches.Postfix_ThingDef_SpecialDisplayStats",
+    "summary": "The UI patch injects dynamic trait effects into weapon stat displays, ensuring that burst fire, rate of fire, and stopping power reflect the item’s current traits. This gives players a clear, up-to-date view of how their traits modify weapon performance."
+  },
+  {
+    "id": "M:CWF.HarmonyPatches.Postfix_ThingComp_Notify_Equipped.Postfix(Verse.ThingComp,Verse.Pawn)",
+    "summary": "**Data/Helper Role (≤15 words:**  \nTriggers equipment handling when a component is equipped.\n\n**High-level summary:**  \nThis method ensures that when a component is equipped, the appropriate equipment handling is performed. It obtains the ability provider for the parent object and triggers the necessary actions for the equipped pawn."
+  },
+  {
+    "id": "T:CWF.HarmonyPatches.Postfix_ThingComp_Notify_Equipped",
+    "summary": "Triggers ability provider when a pawn equips a thing. Ensures equipment events propagate to abilities."
+  },
+  {
+    "id": "M:CWF.HarmonyPatches.Postfix_CompEquippableAbility_AbilityForReading.Postfix(RimWorld.CompEquippableAbility,RimWorld.Ability@)",
+    "summary": "Ensures that a component’s ability matches its expected definition by validating the returned ability and resetting the component’s ability field when a mismatch occurs. It implements a validation strategy that checks the result against the expected definition and clears the field when needed, guaranteeing that only the correct ability is used for subsequent processing. This drives the decision of whether the component’s ability is appropriate for its intended functionality."
+  },
+  {
+    "id": "T:CWF.HarmonyPatches.Postfix_CompEquippableAbility_AbilityForReading",
+    "summary": "Ensures ability reading matches expected definition. Resets mismatched ability to correct one."
+  },
+  {
+    "id": "M:CWF.AttachmentPointData.ExposeData",
+    "summary": "ExposeData is responsible for making the object’s visual and structural attributes available to the game’s serialization framework, ensuring they are saved and restored across game sessions. It guarantees that the data needed for rendering and interaction is consistently persisted and can be reloaded when the game is loaded."
+  },
+  {
+    "id": "T:CWF.AttachmentPointData",
+    "summary": "Defines attachment points for part slots. Includes default texture, draw order, and color handling."
+  },
+  {
+    "id": "M:CWF.CompProperties_DynamicGraphic.#ctor",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "T:CWF.CompProperties_DynamicGraphic",
+    "summary": "Defines properties for dynamic weapon graphics. It holds attachment points where module graphics are rendered, enabling visual customization of weapons."
+  },
+  {
+    "id": "M:CWF.ViewDrawers.AsideDrawer.DrawLabelRow(UnityEngine.Rect@,System.String,System.String,System.Single)",
+    "summary": "Displays a label and its associated value in a UI row, providing visual feedback on whether the value has increased or decreased. It is used by UI components to present data to the user without requiring any interaction."
+  },
+  {
+    "id": "M:CWF.ViewDrawers.AsideDrawer.DrawStatRow(Verse.Listing_Standard,System.String,CWF.Spec,System.String,System.String)",
+    "summary": "Displays a numeric statistic for a given label, showing the current value and its delta from a baseline so the user can quickly see performance changes. It formats the value according to the specified unit and numeric style and renders the row via a UI component, requiring no user interaction."
+  },
+  {
+    "id": "M:CWF.ViewDrawers.AsideDrawer.Draw(UnityEngine.Rect@)",
+    "summary": "Renders a UI panel that displays the full set of weapon specifications—including range, damage, and accuracy. If the weapon is melee, it shows a non-ranged message and ends the display without any user confirmation."
+  },
+  {
+    "id": "T:CWF.ViewDrawers.AsideDrawer",
+    "summary": "Renders side panel UI for weapon stats. Shows range, damage, accuracy, and values."
+  },
+  {
+    "id": "M:CWF.UIKit.WithStyle(System.Action,Verse.GameFont,System.Nullable{UnityEngine.Color},UnityEngine.TextAnchor)",
+    "summary": "Applies a temporary text style (font, color, alignment) to a UI drawing operation, ensuring consistent visual presentation without affecting surrounding UI elements. It uses a state-preserving strategy to temporarily set the desired attributes and then restore the original ones, preventing style leakage and maintaining visual consistency."
+  },
+  {
+    "id": "T:CWF.UIKit",
+    "summary": "Offers a helper to apply and restore UI text styles. Ensures consistent visual presentation."
+  },
+  {
+    "id": "M:CWF.ConfigWindow.DoSettingsWindowContents(UnityEngine.Rect)",
+    "summary": "Presents a settings UI that lets the user enable or disable random module generation and adjust the number of modules via a range control. It also provides a reset button to restore the original configuration."
+  },
+  {
+    "id": "M:CWF.ConfigWindow.SettingsCategory",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "M:CWF.ConfigWindow.#ctor(Verse.ModContentPack)",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "T:CWF.ConfigWindow",
+    "summary": "ConfigWindow implements the settings UI for a weapon-customization mod, letting users enable random module generation, adjust its range, and reset to defaults. It integrates with the mod’s settings system to persist user preferences and deliver a clear configuration experience.  \n\n**Data/Helper Role:** Provides UI for configuring weapon settings and handles user interactions."
+  },
+  {
+    "id": "M:CWF.CompColorable.CompGetGizmosExtra",
+    "summary": "Adds a developer-mode UI command that lets the player randomize the object’s color. The command appears only when the game is in developer mode and the object is not forbidden, and it executes the color change immediately without any user confirmation."
+  },
+  {
+    "id": "M:CWF.CompColorable.PostExposeData",
+    "summary": "Exposes a color definition for external access.  \nEnsures proper data serialization after base logic."
+  },
+  {
+    "id": "M:CWF.CompColorable.PostPostMake",
+    "summary": "Assigns a random color to newly created objects when no explicit color is defined and the game is not in a loading state, ensuring visual diversity during map generation. It checks the current loading mode and the existence of a color definition to decide whether to apply the randomization. This prevents objects from appearing without a color while preserving any pre-existing color settings."
+  },
+  {
+    "id": "M:CWF.CompColorable.ForceColor",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "M:CWF.CompColorable.RandomizeColor",
+    "summary": "Determines a random weapon color by evaluating the available color definitions. It applies a strategy that filters the pool based on color type and random pickability, ensuring visual variety while respecting design constraints."
+  },
+  {
+    "id": "P:CWF.CompColorable.ColorDef",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "T:CWF.CompColorable",
+    "summary": "Manages component color for weapons. Provides random color assignment and notifies parent of changes."
+  },
+  {
+    "id": "M:CWF.HarmonyPatches.Transpiler_Thing_Graphic.Transpiler(System.Collections.Generic.IEnumerable{HarmonyLib.CodeInstruction},System.Reflection.Emit.ILGenerator)",
+    "summary": "Inserts a call to retrieve a dynamic graphic for a specific component whenever the target method runs on a ThingWithComps. It checks whether the component exists and, if present, returns the graphic, otherwise it proceeds with the original logic. This ensures visual elements are automatically updated when the component is present."
+  },
+  {
+    "id": "T:CWF.HarmonyPatches.Transpiler_Thing_Graphic",
+    "summary": "The class provides a Harmony transpiler that intercepts the Thing.Graphic property to inject custom graphic handling for components that support dynamic graphics. It replaces the original IL code with a version that checks for a dynamic-graphics component and returns its graphic, otherwise falling back to the original behavior.  \n\nIL transpiler for Thing.Graphic to inject dynamic graphic logic."
+  },
+  {
+    "id": "M:CWF.HarmonyPatches.Postfix_ThingDef_SpecialDisplayStats_Modules.Postfix(System.Collections.Generic.IEnumerable{RimWorld.StatDrawEntry},Verse.ThingDef)",
+    "summary": "Adds a UI entry that displays the effects of a weapon trait module and the part it belongs to, letting the user see how the module influences the weapon. The entry appears in the important stats area without requiring any user confirmation."
+  },
+  {
+    "id": "T:CWF.HarmonyPatches.Postfix_ThingDef_SpecialDisplayStats_Modules",
+    "summary": "Adds module effect info to ThingDef UI stats. Enhances display of weapon-trait details."
+  },
+  {
+    "id": "M:CWF.HarmonyPatches.Postfix_Projectile_Launch_StoppingPower.Postfix(Verse.Projectile,Verse.Thing)",
+    "summary": "Determines the final stopping power of a projectile by evaluating the influence of equipment traits. It applies a strategy of aggregating only non-zero trait contributions, ensuring the projectile’s effectiveness reflects the equipment’s characteristics."
+  },
+  {
+    "id": "T:CWF.HarmonyPatches.Postfix_Projectile_Launch_StoppingPower",
+    "summary": "Adds extra stopping power to projectiles after launch. Derived from equipment traits."
+  },
+  {
+    "id": "M:CWF.HarmonyPatches.Postfix_CompColorable_ForceColor.Postfix(Verse.ThingComp,System.Nullable{UnityEngine.Color}@)",
+    "summary": "Overrides the color output for a component to enforce a uniform white appearance when the parent object possesses a dynamic-graphic capability. The decision is driven by a simple presence check that triggers a color override, ensuring visual consistency for certain graphical elements."
+  },
+  {
+    "id": "T:CWF.HarmonyPatches.Postfix_CompColorable_ForceColor",
+    "summary": "Overrides color forcing for dynamic graphics. Ensures white color when appropriate."
+  },
+  {
+    "id": "M:CWF.Settings.ExposeData",
+    "summary": "This method integrates the configuration for random module generation into the game’s save/load system, ensuring that the flag controlling whether random modules are enabled and the associated minimum and maximum counts are persisted across sessions. It provides default values when the data is missing, allowing the game to restore the player’s settings and maintain a consistent experience."
+  },
+  {
+    "id": "M:CWF.Settings.Reset",
+    "summary": "Resets the module configuration to its default state. Restores the initial random module settings."
+  },
+  {
+    "id": "T:CWF.Settings",
+    "summary": "Encapsulates configuration for random module behavior, providing defaults and persistence. Allows resetting to values."
+  },
+  {
+    "id": "M:CWF.TraitEquippedOffsets.GetApplicableTraits(RimWorld.StatRequest)",
+    "summary": "Determines which dynamic weapon traits affect a pawn’s primary weapon by checking if any of the trait’s stat offsets match the current stat. It returns the collection of applicable traits, enabling the game to apply the appropriate performance modifiers."
+  },
+  {
+    "id": "M:CWF.TraitEquippedOffsets.Inject",
+    "summary": "The method selects StatDefs that are meant to appear on pawns and humanlikes, then adds a TraitEquippedOffsets component to each of those definitions. This ensures equipment offsets are calculated according to the pawn’s traits for all eligible stat displays while preventing duplicate injection."
+  },
+  {
+    "id": "M:CWF.TraitEquippedOffsets.GetInfoCardHyperlinks(RimWorld.StatRequest)",
+    "summary": "Generates clickable hyperlinks in an info card that open the module pages for each trait associated with the item, letting the user quickly view detailed module information. The method does not require any user confirmation; the links are presented directly for immediate navigation."
+  },
+  {
+    "id": "M:CWF.TraitEquippedOffsets.ExplanationPart(RimWorld.StatRequest)",
+    "summary": "Generates a UI explanation of a stat request by aggregating the impact of all equipped traits. It filters the traits that apply to the request, sums their offsets for the target attribute, and formats the result in a consistent, human-readable way."
+  },
+  {
+    "id": "M:CWF.TraitEquippedOffsets.TransformValue(RimWorld.StatRequest,System.Single@)",
+    "summary": "Calculates the total offset for a stat by aggregating the contributions of all traits that apply to the request. It adds this offset to the incoming value, ensuring the final stat reflects the combined effect of the equipped traits. This approach provides a flexible way to adjust stat values based on the current set of traits."
+  },
+  {
+    "id": "T:CWF.TraitEquippedOffsets",
+    "summary": ""
+  },
+  {
+    "id": "M:CWF.JobGiver_ModifyWeapon.GetUniqueLoadID",
+    "summary": "Generates a unique identifier for each load operation by lazily retrieving a system-wide ID and embedding it into a formatted string. This strategy guarantees that the same identifier is reused across multiple calls until a new load is required, preventing ID collisions and enabling reliable tracking of load-related activities."
+  },
+  {
+    "id": "M:CWF.JobGiver_ModifyWeapon.ExposeData",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "M:CWF.JobGiver_ModifyWeapon.TryGiveJob(Verse.Pawn)",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "T:CWF.JobGiver_ModifyWeapon",
+    "summary": "Holds a list of weapon modification data for transfer. Acts as a job giver that enables pawns to modify weapons based on stored settings. Integrates with the game’s serialization and load-ID system to persist modification information."
+  },
+  {
+    "id": "M:CWF.HarmonyPatches.Postfix_Pawn_EquipmentTracker_GetGizmos.Postfix(System.Collections.Generic.IEnumerable{Verse.Gizmo},Verse.Pawn_EquipmentTracker)",
+    "summary": "Augments equipment gizmo display by incorporating trait-based equipment enhancements. It extends the base gizmo collection with additional interface elements derived from the pawn's dynamic traits, ensuring players can interact with trait-specific equipment capabilities. This drives the business logic for dynamic equipment customization and trait-driven gameplay mechanics."
+  },
+  {
+    "id": "T:CWF.HarmonyPatches.Postfix_Pawn_EquipmentTracker_GetGizmos",
+    "summary": "Adds extra gizmos for equipped items to the pawn equipment UI. Extends the interface with additional equipment-related actions. Provides dynamic trait-based equipment options."
+  },
+  {
+    "id": "M:CWF.Extensions.Extensions.IsNullOrEmpty``1(System.Collections.Generic.IReadOnlyCollection{``0})",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "M:CWF.Extensions.Extensions.IsNullOrEmpty(System.String)",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "T:CWF.Extensions.Extensions",
+    "summary": "Provides reusable null-or-empty checks for strings and read-only collections. Simplifies validation logic across the application."
+  },
+  {
+    "id": "M:CWF.CustomizeWeaponFramework.#cctor",
+    "summary": "Initializes the CustomizeWeaponFramework to enable custom weapon customization in the game. It does this by applying global code modifications and then injecting definitions, building a module cache, and injecting trait offsets, ensuring the framework is fully integrated before any other code uses it."
+  },
+  {
+    "id": "T:CWF.CustomizeWeaponFramework",
+    "summary": "CustomizeWeaponFramework establishes a framework for customizing weapons in the game, allowing users to modify weapon attributes and configurations. It initializes and integrates core modules to support the customization functionality.  \n\nFramework for weapon customization; integrates core modules."
+  },
+  {
+    "id": "M:CWF.CompDynamicGraphic.GetOutlineTexture(CWF.ModuleGraphicData)",
+    "summary": "Determines the appropriate outline texture path for a module’s graphic, applying a fallback strategy that uses a dedicated outline path when available and otherwise derives one from the base texture name. It then loads the corresponding texture, returning null if no valid path exists, thereby guaranteeing a consistent visual outline for the module."
+  },
+  {
+    "id": "M:CWF.CompDynamicGraphic.GetMaskTexture(Verse.GraphicData,CWF.AttachmentPointData)",
+    "summary": "Determines whether a mask texture should be applied to a graphic element based on the attachment point’s color-mask requirement. If a mask is needed, it loads it using a default naming rule when no explicit path is provided, ensuring that color-masked visuals are applied only where appropriate."
+  },
+  {
+    "id": "M:CWF.CompDynamicGraphic.GenerateGraphic",
+    "summary": "Generates a composite graphic for a game object by combining its base texture with any installed trait textures, applying visual effects such as outlines and masks, and returning a single renderable image. This enables the user to see the fully assembled visual representation of the object, reflecting its current traits, without any manual interaction. The method is invoked automatically whenever the object's visual state changes, ensuring the displayed image stays up-to-date."
+  },
+  {
+    "id": "M:CWF.CompDynamicGraphic.GetGraphicDataFor(RimWorld.WeaponTraitDef)",
+    "summary": "Determines the appropriate visual representation for a weapon trait by locating a matching graphic case based on the trait’s associated module and the parent definition. It applies a matching rule to filter candidate cases and selects the one with the highest priority, ensuring the most relevant graphic data is returned."
+  },
+  {
+    "id": "M:CWF.CompDynamicGraphic.Notify_ColorChanged",
+    "summary": "Notifies that the color has changed. It then marks the graphic as dirty."
+  },
+  {
+    "id": "M:CWF.CompDynamicGraphic.Notify_GraphicDirty",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "M:CWF.CompDynamicGraphic.GetDynamicGraphic",
+    "summary": "Generates a graphic on demand, ensuring it reflects the most recent data. It uses a caching strategy that avoids recomputation when the underlying data has not changed, improving performance. The method delivers a consistent, up-to-date visual representation for downstream processes."
+  },
+  {
+    "id": "M:CWF.CompDynamicGraphic.Initialize(Verse.CompProperties)",
+    "summary": "Initializes the component. Then fetches its dynamic traits from the parent."
+  },
+  {
+    "id": "P:CWF.CompDynamicGraphic.Props",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "T:CWF.CompDynamicGraphic",
+    "summary": "Generates and caches composite graphics for weapon traits."
+  },
+  {
+    "id": "M:CWF.HarmonyPatches.Transpiler_Verb_BurstShotCount.ApplyAllMultipliers(System.Single,Verse.Verb)",
+    "summary": "Determines the final burst-shot count for a verb by aggregating contributions from equipment-derived multipliers, ensuring consistent game balance. This approach ensures the resulting value reflects the combined effect of all relevant trait modifiers, delivering predictable weapon performance."
+  },
+  {
+    "id": "M:CWF.HarmonyPatches.Transpiler_Verb_BurstShotCount.Transpiler(System.Collections.Generic.IEnumerable{HarmonyLib.CodeInstruction})",
+    "summary": "Replaces the IL code that computes the burst shot count for a verb with a custom multiplier application, ensuring the mod's behavior remains consistent across game versions. The transpiler locates the specific instruction pattern that performs the original calculation and swaps it for a direct call to a multiplier method, thereby simplifying the logic and reducing potential version-specific issues."
+  },
+  {
+    "id": "T:CWF.HarmonyPatches.Transpiler_Verb_BurstShotCount",
+    "summary": "This class modifies the way the game calculates the number of shots in a burst for weapons, integrating custom trait multipliers to adjust the final count. It does this by patching the original method and inserting a custom calculation that reads the relevant trait data, ensuring the mod works across different RimWorld versions. If the patch cannot be applied, it logs an error to alert the user.\n\n**Data/Helper Role:** Applies custom burst-shot count multipliers to weapon data."
+  },
+  {
+    "id": "M:CWF.HarmonyPatches.Prefix_Projectile_Launch.Prefix(Verse.Projectile,Verse.Thing)",
+    "summary": "Applies trait-driven damage modifications to a projectile, allowing the weapon’s traits to change its damage type and add extra damage. It evaluates the weapon’s dynamic traits and updates the projectile accordingly, ensuring the projectile’s behavior reflects the specific traits of the equipped weapon."
+  },
+  {
+    "id": "T:CWF.HarmonyPatches.Prefix_Projectile_Launch",
+    "summary": "Applies trait-based damage changes to projectiles before launch. Allows damage overrides and extra damage."
+  },
+  {
+    "id": "M:CWF.HarmonyPatches.Postfix_ThingComp_Notify_Unequipped.Postfix(Verse.ThingComp,Verse.Pawn)",
+    "summary": "Handles post-equip actions for a pawn. Triggers the ability provider’s unequip logic."
+  },
+  {
+    "id": "T:CWF.HarmonyPatches.Postfix_ThingComp_Notify_Unequipped",
+    "summary": "Handles post-unEquip event for ThingComp. Notifies ability provider."
+  },
+  {
+    "id": "M:CWF.AdapterDef.TryAddComp(Verse.ThingDef,Verse.CompProperties)",
+    "summary": "Ensures a component is added to a weapon definition only if not already present."
+  },
+  {
+    "id": "M:CWF.AdapterDef.AdaptWeapon(Verse.ThingDef,CWF.AdapterDef)",
+    "summary": "Adapts a weapon definition by applying visual and functional changes from an associated adapter definition. It updates the weapon’s graphics, merges relevant tags, and injects a set of default components that enable renaming, recoloring, and ability provision, plus any additional components defined by the adapter. The strategy focuses on visual customization combined with flexible component injection to meet specific gameplay requirements."
+  },
+  {
+    "id": "M:CWF.AdapterDef.Inject",
+    "summary": "It drives the adaptation of weapon definitions by pairing each adapter definition with its matching weapon definition and applying the appropriate transformation logic. The strategy ensures only correctly matched pairs are processed, while any mismatches are logged to preserve data integrity."
+  },
+  {
+    "id": "M:CWF.AdapterDef.ConfigErrors",
+    "summary": "Collects configuration errors from the component, including inherited errors, and adds a specific error when graphic data is missing. This ensures that any configuration issues are identified early, preventing the component from operating with invalid settings."
+  },
+  {
+    "id": "T:CWF.AdapterDef",
+    "summary": "AdapterDef defines a reusable adapter for weapons. It applies graphics, tags, and components."
+  },
+  {
+    "id": "M:CWF.CompProperties_DynamicTraits.#ctor",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "T:CWF.CompProperties_DynamicTraits",
+    "summary": "Defines the business logic for configuring weapons with modular components and pre-installed traits during generation, serving as a configuration source for the dynamic traits component. It enables designers to specify which part slots can accept modules and which traits should be applied by default.\n\nHolds configuration data for part slots and default traits."
+  },
+  {
+    "id": "M:CWF.CompDynamicTraits.ClearAllCaches",
+    "summary": "Clears all cached data for the entity, ensuring that any calculations involving its statistics and verb behavior use the most recent values. This is required whenever the entity’s configuration changes, preventing stale information from influencing game logic. By resetting the caches, the system maintains consistency across all dependent components."
+  },
+  {
+    "id": "M:CWF.CompDynamicTraits.SetupAbility(System.Boolean)",
+    "summary": "Initializes or refreshes the set of abilities for an entity by deriving them from its traits, ensuring the provider stays synchronized with the current configuration. It supports both first-time setup and later updates, allowing the system to maintain accurate abilities as the entity evolves. The method drives the decision of which abilities are active based on the trait-derived properties."
+  },
+  {
+    "id": "M:CWF.CompDynamicTraits.RecalculateAvailableParts",
+    "summary": "Determines the set of parts that are currently available to the parent object by starting from a base collection of supported parts and then applying trait-driven rules that enable or disable parts based on the parent’s definition. It uses a rule-based strategy that evaluates each trait’s module extensions, adding or removing parts according to the defined conditions. The result is a dynamic collection that reflects the current trait configuration for downstream part-selection logic."
+  },
+  {
+    "id": "M:CWF.CompDynamicTraits.OnTraitsChanged",
+    "summary": "Handles trait changes by updating the character’s functional state, including recomputing the set of available parts and reinitializing the ability system. It also clears all cached data to avoid stale information and forces a visual refresh so the character’s graphics reflect the new traits. This ensures consistency between the character’s traits, abilities, and appearance."
+  },
+  {
+    "id": "M:CWF.CompDynamicTraits.InitializeTraits",
+    "summary": "It determines which default traits should be applied to the parent object by verifying that each trait has a defined part and that the part slot is not already occupied. The method resolves conflicts by discarding any trait that would duplicate an existing default trait, and silently skips traits lacking a corresponding part. This ensures the object receives a consistent set of default traits without overlapping assignments."
+  },
+  {
+    "id": "M:CWF.CompDynamicTraits.CompGetEquippedGizmosExtra(Verse.Pawn)",
+    "summary": "Provides a gizmo command that lets players open a dedicated weapon customization interface. The command is shown only to the player faction and opens the panel directly, without any additional user confirmation."
+  },
+  {
+    "id": "M:CWF.CompDynamicTraits.CompGetGizmosExtra",
+    "summary": "Provides a menu command to open a weapon customization panel for the weapon. In developer mode it also adds commands to add or remove weapon traits from a list of compatible options. The commands are only shown when the weapon is not forbidden to the player and do not require any user confirmation or display any warnings."
+  },
+  {
+    "id": "M:CWF.CompDynamicTraits.PostExposeData",
+    "summary": "PostExposeData loads the object’s trait data from the save file and removes any missing entries to preserve data integrity. It then triggers a recalculation of the available parts and configures the object’s ability, ensuring the object is fully prepared for use after loading. This approach guarantees the object is correctly initialized and ready for gameplay."
+  },
+  {
+    "id": "M:CWF.CompDynamicTraits.PostPostMake",
+    "summary": "Finalizes the post-make state of an entity by establishing its traits, updating the set of parts it can use, and enabling its ability system. This ensures the entity is fully prepared for the next phase, maintaining consistency and readiness for subsequent gameplay or processing."
+  },
+  {
+    "id": "M:CWF.CompDynamicTraits.SpecialDisplayStats",
+    "summary": "Displays a concise, player-focused summary of the weapon’s installed modules and their effects in the weapon’s stats view. It aggregates the module names and their detailed descriptions into a single, easy-to-read block for the user. No additional confirmation or action is required; the purpose is purely informational."
+  },
+  {
+    "id": "M:CWF.CompDynamicTraits.CompInspectStringExtra",
+    "summary": "Generates a localized, human-readable description of the weapon’s traits for the inspection panel. It returns null when no traits are present; otherwise it builds a comma-separated list of trait labels, capitalizes the first letter, and prefixes the text with a label indicating the module type, delivering a concise UI summary of the weapon’s capabilities."
+  },
+  {
+    "id": "M:CWF.CompDynamicTraits.GetStatsExplanation(RimWorld.StatDef,System.Text.StringBuilder,System.String)",
+    "summary": "Its responsibility is to generate a clear, human-readable description of how each weapon trait modifies a given stat, combining additive offsets and multiplicative factor contributions. The strategy is to examine each trait, filter out negligible contributions, and present the remaining effects under a concise heading to keep the explanation informative yet brief."
+  },
+  {
+    "id": "M:CWF.CompDynamicTraits.GetStatFactor(RimWorld.StatDef)",
+    "summary": "Aggregates trait influences into a single factor. Returns the combined multiplier."
+  },
+  {
+    "id": "M:CWF.CompDynamicTraits.GetStatOffset(RimWorld.StatDef)",
+    "summary": "Aggregates trait stat offsets for a given stat definition. Returns total offset."
+  },
+  {
+    "id": "M:CWF.CompDynamicTraits.RandomizeTraits",
+    "summary": "RandomizeTraits determines which traits to apply to a weapon’s free parts by honoring user-defined limits and ensuring each trait is compatible with the weapon’s definition. It performs a compatibility filter and then randomly installs a selection of traits within the allowed count."
+  },
+  {
+    "id": "M:CWF.CompDynamicTraits.GetInstalledTraitFor(CWF.PartDef)",
+    "summary": "Returns the installed trait definition for a part. Provides a simple lookup."
+  },
+  {
+    "id": "M:CWF.CompDynamicTraits.UninstallTrait(CWF.PartDef)",
+    "summary": "Removes a trait from a part. Notifies listeners that the trait list has changed."
+  },
+  {
+    "id": "M:CWF.CompDynamicTraits.InstallTrait(CWF.PartDef,RimWorld.WeaponTraitDef)",
+    "summary": "Installs a trait onto a component, ensuring the slot is free before assignment. If the slot is already occupied, the operation aborts and a warning is logged, after which the OnTraitsChanged callback is invoked to propagate the change."
+  },
+  {
+    "id": "P:CWF.CompDynamicTraits.AvailableParts",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "P:CWF.CompDynamicTraits.Traits",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "P:CWF.CompDynamicTraits.InstalledTraits",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "P:CWF.CompDynamicTraits.Props",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "T:CWF.CompDynamicTraits",
+    "summary": "**Data:** Dictionary of PartDef → WeaponTraitDef (installed traits)  \n\nManages weapon trait installations and their effects.  \nProvides methods to install, uninstall, and randomize traits, updating stats, graphics, and abilities.  \nIntegrates UI panels and developer tools for trait management."
+  },
+  {
+    "id": "M:CWF.JobDriver_ModifyWeaponSelf.DoUninstall(CWF.CompDynamicTraits,CWF.ModificationData)",
+    "summary": "Removes a trait from a component and creates a corresponding module for the pawn, providing the pawn with the new capability. It ensures the module is added to the pawn’s inventory, falling back to placing it near the pawn if the inventory is full, and plays a sound to confirm the operation."
+  },
+  {
+    "id": "M:CWF.JobDriver_ModifyWeaponSelf.DoInstall(CWF.CompDynamicTraits,CWF.ModificationData)",
+    "summary": "Determines whether a pawn can receive a new trait by verifying the existence of the required module. If the module is present, it installs the trait, consumes the module, and plays a completion sound; otherwise, it logs an error indicating the missing module."
+  },
+  {
+    "id": "M:CWF.JobDriver_ModifyWeaponSelf.MakeNewToils",
+    "summary": "Defines a timed job step that installs or uninstalls a weapon module, ensuring the required module is present before applying the change. It applies the selected modification by invoking the appropriate component based on the modification type."
+  },
+  {
+    "id": "M:CWF.JobDriver_ModifyWeaponSelf.TryMakePreToilReservations(System.Boolean)",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "P:CWF.JobDriver_ModifyWeaponSelf.ModData",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "P:CWF.JobDriver_ModifyWeaponSelf.Weapon",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "T:CWF.JobDriver_ModifyWeaponSelf",
+    "summary": "Orchestrates weapon-modification jobs by managing progress and deciding whether to install or uninstall traits.  \nApplies or removes weapon traits using module items, updating the weapon’s dynamic-trait component."
+  },
+  {
+    "id": "M:CWF.HarmonyPatches.Postfix_FloatMenuOptionProvider_Reload_GetReloadablesUsingAmmo.Postfix(System.Collections.Generic.IEnumerable{RimWorld.Utility.IReloadableComp},Verse.Pawn,Verse.Thing)",
+    "summary": "Expands the list of reloadable components for a pawn by adding any ability provider that can be reloaded with the currently clicked item, ensuring the result set includes all relevant reload options. It does this by confirming the pawn possesses a primary piece of equipment, verifying that the equipment supplies an ability provider, and checking whether that provider can be reloaded with the clicked thing."
+  },
+  {
+    "id": "T:CWF.HarmonyPatches.Postfix_FloatMenuOptionProvider_Reload_GetReloadablesUsingAmmo",
+    "summary": "Adds ability-based reload options to the float menu. Enables reloading weapons with compatible ammo."
+  },
+  {
+    "id": "T:CWF.ModificationType",
+    "summary": "Represents the type of change applied to a component. Distinguishes installation from removal actions."
+  },
+  {
+    "id": "M:CWF.ModificationData.ExposeData",
+    "summary": "Exposes configuration data to the UI by loading the relevant fields from the saved game state. It ensures the UI can display the correct values based on the player’s current setup, delivering a seamless user experience."
+  },
+  {
+    "id": "T:CWF.ModificationData",
+    "summary": "Stores a modification’s type, part, trait, and module. Provides serialization support for the data."
+  },
+  {
+    "id": "M:CWF.CompProperties_Colorable.#ctor",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "T:CWF.CompProperties_Colorable",
+    "summary": "Component properties for colorable objects. Links to the colorable component class."
+  },
+  {
+    "id": "M:CWF.WeaponWindow.PostClose",
+    "summary": "Ensures that when the user closes the view, any pending changes are saved and background jobs are started, preserving data integrity without prompting the user. This finalization step completes the close operation and keeps the system consistent."
+  },
+  {
+    "id": "M:CWF.WeaponWindow.DoWindowContents(UnityEngine.Rect)",
+    "summary": "Presents the window’s UI by coordinating the visual display of a header, an aside panel, and a main content area, enabling the user to view and interact with the window’s components. It integrates these three sections into a cohesive interface without requiring any user confirmation or warning."
+  },
+  {
+    "id": "M:CWF.WeaponWindow.#ctor(Verse.Thing)",
+    "summary": "Initializes a weapon UI window, linking a data model, interaction controller, and job dispatcher to present weapon specifications and enable user actions and job management. The window’s responsibility is to provide a responsive interface that updates in real time as the player interacts, while the strategy leverages a spec database, event-driven interaction handling, and background processing."
+  },
+  {
+    "id": "P:CWF.WeaponWindow.InitialSize",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "T:CWF.WeaponWindow",
+    "summary": "The WeaponWindow class creates a UI window for viewing and interacting with a weapon’s specifications, coordinating data updates and user actions. It organizes the display into a header, an aside panel, and a main area, and triggers data recalculation and job dispatch when the window is closed. Manages weapon UI data and interaction logic."
+  },
+  {
+    "id": "M:CWF.JobDriver_ModifyWeaponHaul.PerformModifications(CWF.CompDynamicTraits,System.Collections.Generic.List{CWF.ModificationData})",
+    "summary": "Determines the appropriate trait changes for a component by processing a list of modifications, separating uninstall and install actions. It validates that the required module item is present before installing a trait and logs an error if the module is missing, ensuring trait installations only occur when resources are available. The method ensures the component’s trait set remains consistent with the requested modifications."
+  },
+  {
+    "id": "M:CWF.JobDriver_ModifyWeaponHaul.MakeNewToils",
+    "summary": "Orchestrates the actor’s workflow to collect required modules from a queue, place them in the inventory, and then perform a modification on the target item. It uses a queue-based strategy to verify that all needed modules are present, and if any are missing the job is marked incomplete. When all modules are available, the modification is applied via a dedicated component, delivering a completion message and sound."
+  },
+  {
+    "id": "M:CWF.JobDriver_ModifyWeaponHaul.TryMakePreToilReservations(System.Boolean)",
+    "summary": "Calculates whether the pawn can secure a weapon and any required modules before a pre-toil step. It enforces reservation rules to prevent resource contention and guarantee the job can proceed."
+  },
+  {
+    "id": "P:CWF.JobDriver_ModifyWeaponHaul.ModDataList",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "P:CWF.JobDriver_ModifyWeaponHaul.Weapon",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "T:CWF.JobDriver_ModifyWeaponHaul",
+    "summary": "Handles item modification by moving required modules to the pawn’s inventory. The driver coordinates reservation, hauling, and modification steps, delivering a completion message and sound."
+  },
+  {
+    "id": "M:CWF.HarmonyPatches.Postfix_PawnWeaponGenerator_TryGenerateWeaponFor.Postfix(Verse.Pawn,Verse.PawnGenerationRequest)",
+    "summary": "During pawn generation, this hook decides whether to apply trait randomization to a pawn. It checks that the pawn belongs to a non-player faction, is humanlike, and is equipped with primary equipment that contains a dynamic-traits component. If the conditions are met, the component randomizes the pawn’s traits to increase variety."
+  },
+  {
+    "id": "T:CWF.HarmonyPatches.Postfix_PawnWeaponGenerator_TryGenerateWeaponFor",
+    "summary": "Randomizes traits for non-player humanlike pawns after weapon generation."
+  },
+  {
+    "id": "M:CWF.PartDefOf.#cctor",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "T:CWF.PartDefOf",
+    "summary": "Defines static references for weapon part definitions. Provides a central registry for part types."
+  },
+  {
+    "id": "T:CWF.PartGroup",
+    "summary": "The PartGroup enum defines the primary UI regions used for layout and positioning, providing a clear, human-readable way to reference the top, bottom, left, and bottom parts of the interface. It serves as a standard set of identifiers that UI components can reference to determine where they should appear within a design.\n\nDefines UI region identifiers for layout."
+  },
+  {
+    "id": "M:CWF.PartDef.ConfigErrors",
+    "summary": "Validates the configuration and returns a collection of error messages indicating any problems. It incorporates errors reported by the base class and adds a specific error when a required configuration element is missing, enabling callers to identify and resolve configuration issues."
+  },
+  {
+    "id": "T:CWF.PartDef",
+    "summary": "Defines a part definition used for UI customization. Specifies its UI category and ranking."
+  },
+  {
+    "id": "T:CWF.GraphicCase",
+    "summary": "Defines weapon-specific graphics based on matching criteria. Chooses the highest-ranked case when multiple apply."
+  },
+  {
+    "id": "M:CWF.TraitModuleExtension.ConfigErrors",
+    "summary": "Returns validation error messages for missing required fields. It enforces XML configuration integrity by flagging any definition lacking essential components, guiding developers to correct the data before use."
+  },
+  {
+    "id": "T:CWF.TraitModuleExtension",
+    "summary": "This class defines a modular extension that attaches a specific weapon trait to a designated part of a weapon. It also provides compatibility checks, conditional slot rules, and visual case definitions to ensure the module works correctly across different weapons.  \n\nStores configuration for a weapon trait module, including definition, slot, rules, and cases."
+  },
+  {
+    "id": "T:CWF.ModuleGraphicData",
+    "summary": "Stores module graphic assets and rendering parameters. Includes optional outline, offset, and scale."
+  },
+  {
+    "id": "M:CWF.CompProperties_AbilityProvider.#ctor",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "T:CWF.CompProperties_AbilityProvider",
+    "summary": "Defines the configuration for an ability provider component, linking it to the appropriate runtime class. Used by the system to instantiate and manage abilities."
+  },
+  {
+    "id": "M:CWF.ViewDrawers.HeaderDrawer.Draw(UnityEngine.Rect@)",
+    "summary": "Renders a row for a weapon, showing its icon and name, and provides buttons to browse compatible modules and rename the weapon. Pressing the browse button opens the module browser; pressing the rename button opens a text input dialog and validates the new name, showing a message if it is invalid."
+  },
+  {
+    "id": "T:CWF.ViewDrawers.HeaderDrawer",
+    "summary": "Renders a weapon header UI with icon, name, and buttons for browsing and renaming."
+  },
+  {
+    "id": "M:CWF.Dialog_TextInput.PreClose",
+    "summary": "Executes the pre-close logic for a UI component, ensuring that any pending changes are processed before the component is closed. It may invoke a confirmation step that lets the user verify the closure, preserving data integrity."
+  },
+  {
+    "id": "M:CWF.Dialog_TextInput.OnCancelKeyPressed",
+    "summary": "Handles the user’s cancel key press to abort the current operation, ensuring it does not execute when the dialog closes. It also triggers the default cancel handling, which may present a confirmation prompt to the user before finalizing the cancellation."
+  },
+  {
+    "id": "M:CWF.Dialog_TextInput.DoWindowContents(UnityEngine.Rect)",
+    "summary": "Presents a modal dialog that lets the user enter a value and then either confirm or cancel the operation. The dialog includes a title, a text input field, and two buttons—confirm and cancel—so the user must confirm before the action proceeds."
+  },
+  {
+    "id": "P:CWF.Dialog_TextInput.InitialSize",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "M:CWF.Dialog_TextInput.#ctor(System.String,System.Action{System.String},System.String,System.String,System.String)",
+    "summary": "Creates a modal text-input dialog that captures user-entered text and invokes a confirmation handler.  \nEstablishes a modal interaction strategy that pauses the game and isolates input to the dialog, ensuring focused user interaction.  \nProvides default UI labels when none are supplied."
+  },
+  {
+    "id": "T:CWF.Dialog_TextInput",
+    "summary": "Dialog_TextInput is a modal dialog that prompts the user to enter a single line of text, displaying a title and offering confirm and cancel actions. It invokes a callback with the entered text when the user confirms, and does nothing if the user cancels.  \n\nCollects user-entered string and passes it to a callback."
+  },
+  {
+    "id": "M:CWF.HarmonyPatches.Transpiler_JobDriver_Reload_MakeNewToils.FindCustomReloadable(RimWorld.Utility.IReloadableComp,Verse.Thing)",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "M:CWF.HarmonyPatches.Transpiler_JobDriver_Reload_MakeNewToils.Transpiler(System.Collections.Generic.IEnumerable{HarmonyLib.CodeInstruction},System.Reflection.Emit.ILGenerator)",
+    "summary": "The transpiler intercepts the generic component lookup for a specific ability component and replaces it with a custom method that retrieves a custom reloadable component, ensuring the mod can inject its own reload logic. By modifying the IL, it redirects the reload process to the mod’s implementation, allowing the game to handle the component’s reload behavior according to the mod’s rules. This approach guarantees that the correct reload logic is applied without altering the original source code."
+  },
+  {
+    "id": "M:CWF.HarmonyPatches.Transpiler_JobDriver_Reload_MakeNewToils.TargetMethod",
+    "summary": "Identifies the correct method for a Harmony patch in the state machine generated by JobDriver_Reload.MakeNewToils. It ensures the patch is applied to the right location by locating the MoveNext method within the appropriate state-machine type."
+  },
+  {
+    "id": "T:CWF.HarmonyPatches.Transpiler_JobDriver_Reload_MakeNewToils",
+    "summary": "Transpiler_JobDriver_Reload_MakeNewToils implements a Harmony transpiler that intercepts the reload job driver’s component lookup, substituting the default behavior with a custom method that also checks ability-provider components, thereby improving the identification of reloadable abilities. Provides a transpiler that intercepts method calls to replace component retrieval."
+  },
+  {
+    "id": "M:CWF.WeaponMatcher.IsMatch(Verse.ThingDef)",
+    "summary": "Determines whether a weapon definition satisfies the required criteria by checking if it belongs to a pre-approved collection or if its tags intersect with a set of allowed tags. The method follows a tag-matching strategy, returning a match only when the weapon is in the collection or possesses at least one allowed tag, and it quickly rejects the request when either the weapon or the tag list is empty."
+  },
+  {
+    "id": "T:CWF.WeaponMatcher",
+    "summary": "Determines if a weapon matches predefined criteria. Supports direct definition or tag checks."
+  },
+  {
+    "id": "T:CWF.ConditionalPartModifier",
+    "summary": "ConditionalPartModifier defines rules to enable or disable weapon parts based on conditions."
+  },
+  {
+    "id": "M:CWF.CompProperties_Renamable.#ctor",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "T:CWF.CompProperties_Renamable",
+    "summary": "Provides configuration for a renamable component. Associates it with renamable behavior."
+  },
+  {
+    "id": "M:CWF.ModuleBrowserWindow.DrawRightColumn(UnityEngine.Rect@)",
+    "summary": "Displays a scrollable list of compatible modules for the currently selected part, showing each module’s name and a placeholder when none are available. When the user clicks the info button, an information dialog opens to reveal detailed module details."
+  },
+  {
+    "id": "M:CWF.ModuleBrowserWindow.DrawLeftColumn(UnityEngine.Rect@)",
+    "summary": "Renders a left-hand panel that presents a list of selectable parts (or modules) and an “All” option, allowing the user to choose a specific part to view or modify. The selection is reflected immediately in the UI without any confirmation dialog or warning, enabling direct interaction with the chosen part."
+  },
+  {
+    "id": "M:CWF.ModuleBrowserWindow.DoWindowContents(UnityEngine.Rect)",
+    "summary": "Renders a two-column layout that lets the user interact with separate sets of controls or information displayed side-by-side. No confirmation dialog or warning is presented; the method simply presents the UI for user interaction."
+  },
+  {
+    "id": "M:CWF.ModuleBrowserWindow.#ctor(Verse.Thing)",
+    "summary": "Initializes the module browser window by configuring its UI interaction settings and pausing the game while it is open. It then identifies which module definitions are compatible with the item, groups them by their associated part, and orders the groups for display."
+  },
+  {
+    "id": "P:CWF.ModuleBrowserWindow.InitialSize",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "T:CWF.ModuleBrowserWindow",
+    "summary": "Provides a user interface for browsing and selecting compatible modules for a given weapon, organized by the weapon’s parts. It lets users view module details and choose one for attachment.\n\nData/Helper Role: UI window for module selection."
+  },
+  {
+    "id": "M:CWF.CompTraitModule.CompFloatMenuOptions(Verse.Pawn)",
+    "summary": "Provides a context-menu option that lets a pawn pick up the module from its parent object. It checks whether the pawn can reach the module and, if not, displays a warning and blocks the action."
+  },
+  {
+    "id": "T:CWF.CompTraitModule",
+    "summary": "Adds a context menu option allowing a pawn to pick up the module."
+  },
+  {
+    "id": "M:CWF.CompRenamable.PostExposeData",
+    "summary": "Exposes a nickname for serialization. Ensures data is saved and restored."
+  },
+  {
+    "id": "M:CWF.CompRenamable.TransformLabel(System.String)",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "P:CWF.CompRenamable.Nickname",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "T:CWF.CompRenamable",
+    "summary": "Provides nickname for a component, overriding its label. Stores and updates nickname via persistence."
+  },
+  {
+    "id": "M:CWF.HarmonyPatches.Transpiler_Verb_TicksBetweenBurstShots.ApplyAllMultipliers(System.Single,Verse.Verb)",
+    "summary": "Calculates the final timing for a verb by applying all burst-shot speed multipliers from the equipment’s traits. It uses a filtering strategy that only considers traits with a non-zero multiplier, ensuring the timing reflects the combined effect of the equipment."
+  },
+  {
+    "id": "M:CWF.HarmonyPatches.Transpiler_Verb_TicksBetweenBurstShots.Transpiler(System.Collections.Generic.IEnumerable{HarmonyLib.CodeInstruction})",
+    "summary": "The Transpiler method modifies the IL of a specific method that determines the number of ticks between burst shots, replacing a loop with a direct call to a custom multiplier function to alter the game’s shooting mechanics. It uses a pattern-matching strategy to locate the target loop and injects new instructions that apply all relevant multipliers before storing the result. If the expected pattern is not found, it logs a compatibility error."
+  },
+  {
+    "id": "T:CWF.HarmonyPatches.Transpiler_Verb_TicksBetweenBurstShots",
+    "summary": "Modifies burst shot timing. Applies trait speed multipliers."
+  },
+  {
+    "id": "M:CWF.Spec.#ctor(System.Single,System.Boolean)",
+    "summary": "Initializes a specification with raw value. Stores flag indicating lower-value preference."
+  },
+  {
+    "id": "P:CWF.Spec.IsLowerValueBetter",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "T:CWF.Spec",
+    "summary": "Encapsulates a numeric spec with mutable dynamic value and lower-is-better flag. Represents a specification."
+  },
+  {
+    "id": "M:CWF.SpecDatabase.GetComputedStoppingPower",
+    "summary": "Calculates the total stopping power of a weapon by combining the base value from its projectile with any extra power contributed by unique weapon traits and dynamic traits. This aggregated value is used by the game to determine how effectively the weapon can halt or slow down enemies."
+  },
+  {
+    "id": "M:CWF.SpecDatabase.CalculateDps(CWF.SpecDatabase.Mode)",
+    "summary": "Calculates damage per second for raw or dynamic mode. Considers burst, warmup, and cooldown."
+  },
+  {
+    "id": "M:CWF.SpecDatabase.Recalculate",
+    "summary": "Recalculate refreshes a weapon’s core performance metrics by pulling dynamic values from its stat definitions, projectile characteristics, and primary verb attributes. It then derives stopping power and damage-per-second using specialized calculation components, ensuring the weapon’s stats stay current for gameplay decisions."
+  },
+  {
+    "id": "M:CWF.SpecDatabase.#ctor(Verse.Thing)",
+    "summary": "Constructs a weapon specification database by extracting raw performance metrics from the weapon definition and its associated projectile data. It then computes a damage-per-second (DPS) metric using those raw values and triggers a recalculation to ensure the stored specs remain consistent and ready for downstream combat analysis."
+  },
+  {
+    "id": "P:CWF.SpecDatabase.IsMeleeWeapon",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "T:CWF.SpecDatabase.Mode",
+    "summary": "Specifies the processing style for the component. Options are raw or dynamic."
+  },
+  {
+    "id": "T:CWF.SpecDatabase",
+    "summary": "Encapsulates weapon specifications and computes derived performance metrics.  \nOffers raw and dynamic values for damage, range, and other stats."
+  },
+  {
+    "id": "M:CWF.CompProperties_TraitModule.#ctor",
+    "summary": "Internal data structure or simple property."
+  },
+  {
+    "id": "T:CWF.CompProperties_TraitModule",
+    "summary": "Provides configuration for a trait module. Associates the module with its runtime implementation."
+  }
+]
