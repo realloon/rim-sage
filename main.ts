@@ -19,7 +19,7 @@ async function main() {
 
   if (!query || !rankFn) {
     console.error(
-      `用法: bun run search/index.ts "查询内容" [--strategy=heuristic|llm]`
+      `用法: bun run dev "查询内容" [--strategy=heuristic|llm]`
     )
     process.exit(1)
   }
